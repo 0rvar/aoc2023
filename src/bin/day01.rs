@@ -1,7 +1,8 @@
 use aoc2023::initialize_aoc;
 
 fn main() {
-    let input = initialize_aoc();
+    let aoc = initialize_aoc();
+    let input = aoc.input();
     let calibration_numbers: u32 = input
         .trim()
         .lines()

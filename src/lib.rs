@@ -1,6 +1,23 @@
+use std::time::Instant;
+
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-pub fn initialize_aoc() -> String {
+pub struct Aoc {
+    start: Instant,
+    input: String,
+}
+impl Aoc {
+    pub fn input(&self) -> String {
+        self.input.clone()
+    }
+}
+impl Drop for Aoc {
+    fn drop(&mut self) {
+        let elapsed = self.start.elapsed();
+        tracing::info!("Elapsed: {}", humantime::format_duration(elapsed));
+    }
+}
+pub fn initialize_aoc() -> Aoc {
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::new(
             std::env::var("RUST_LOG").unwrap_or_else(|_| "debug,reqwest=warn,hyper=warn".into()),
@@ -31,7 +48,14 @@ pub fn initialize_aoc() -> String {
         .parse::<u8>()
         .expect("Binary is not named dayNN");
 
-    fetch_input(day_number)
+    let now = Instant::now();
+
+    tracing::info!("Advent of Code, day {}", day_number);
+
+    Aoc {
+        start: now,
+        input: fetch_input(day_number),
+    }
 }
 
 fn fetch_input(day: u8) -> String {
