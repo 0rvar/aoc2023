@@ -24,7 +24,12 @@ pub fn initialize_aoc() -> String {
         .strip_prefix("day")
         .expect("Unknown binary name");
 
-    let day_number = day.parse::<u8>().expect("Binary is not named dayNN");
+    let day_number = day
+        .chars()
+        .filter(|c| c.is_ascii_digit())
+        .collect::<String>()
+        .parse::<u8>()
+        .expect("Binary is not named dayNN");
 
     fetch_input(day_number)
 }
