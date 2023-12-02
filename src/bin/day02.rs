@@ -20,26 +20,15 @@ fn main() {
     let games = input
         .lines()
         .map(|line| {
-            let mut parts = line.split(": ");
-            let game_number: u32 = parts
-                .next()
-                .unwrap()
-                .split(" ")
-                .last()
-                .unwrap()
-                .parse()
-                .unwrap();
-            let balls = parts
-                .next()
-                .unwrap()
-                .split(|c| c == ',' || c == ';')
-                .map(|specifier| {
-                    let mut specified_parts = specifier.trim().split(" ");
-                    let count: u32 = specified_parts.next().unwrap().parse().unwrap();
-                    let color = specified_parts.next().unwrap().to_string();
-                    GameBall { color, count }
-                })
-                .collect::<Vec<_>>();
+            let parts = line.split_once(": ").unwrap();
+            let game_number: u32 = parts.0.split(" ").last().unwrap().parse().unwrap();
+            let mut balls = Vec::with_capacity(50);
+            for specifier in parts.1.split(|c| c == ',' || c == ';') {
+                let parts = specifier.trim().split_once(" ").unwrap();
+                let count: u32 = parts.0.parse().unwrap();
+                let color = parts.1.to_string();
+                balls.push(GameBall { color, count })
+            }
             Game { game_number, balls }
         })
         .collect::<Vec<_>>();
