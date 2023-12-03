@@ -109,7 +109,13 @@ fn test_is_symbol() {
     assert!(is_symbol('#'));
     assert!(is_symbol('$'));
     assert!(is_symbol('+'));
+    assert!(is_symbol('/'));
+    assert!(is_symbol('&'));
+    assert!(is_symbol('-'));
+    assert!(is_symbol('='));
+    assert!(is_symbol('%'));
     assert!(!is_symbol('.'));
+    assert!(!is_symbol('6'));
 }
 
 fn adjacent((x, y): (usize, usize)) -> Vec<(isize, isize)> {
