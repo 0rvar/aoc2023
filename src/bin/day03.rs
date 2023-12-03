@@ -6,20 +6,6 @@ fn main() {
     let aoc = initialize_aoc();
     let input = aoc.input();
 
-    //     let input = "
-    // 467..114..
-    // ...*......
-    // ..35...633
-    // ......#...
-    // 617*......
-    // .....+.58.
-    // ..592.....
-    // ......755.
-    // ...$.*....
-    // .664.598..
-    //         "
-    //     .trim();
-
     let mut map = HashMap::new();
     let mut width = 0;
     let mut height = 0;
@@ -71,11 +57,9 @@ fn main() {
                 }
             }
             if !has_adjacent_symbol {
-                tracing::debug!("No adjacent!");
                 return None;
             }
             let parsed = parse_digits(&run);
-            tracing::debug!("Parsed run: {}", parsed);
             Some(parsed)
         })
         .sum();
