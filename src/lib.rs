@@ -89,3 +89,35 @@ fn fetch_input(day: u8) -> String {
 
     input
 }
+
+pub fn create_adjacent_positions<T: num_traits::Num + PartialOrd + Copy>(
+    (x, y): (T, T),
+) -> Vec<(T, T)> {
+    let mut positions = Vec::with_capacity(8);
+    if x > T::zero() {
+        if !y.is_zero() {
+            positions.push((x - T::one(), y - T::one()))
+        }
+        positions.push((x - T::one(), y));
+        positions.push((x - T::one(), y + T::one()));
+    }
+    if !y.is_zero() {
+        positions.push((x, y - T::one()));
+        positions.push((x + T::one(), y - T::one()));
+    }
+    positions.push((x, y + T::one()));
+    positions.push((x + T::one(), y));
+    positions.push((x + T::one(), y + T::one()));
+
+    positions
+}
+
+pub fn create_adjacent_positions_limited<T: num_traits::Num + PartialOrd + Copy>(
+    (x, y): (T, T),
+    (max_x, max_y): (T, T),
+) -> Vec<(T, T)> {
+    create_adjacent_positions((x, y))
+        .into_iter()
+        .filter(|(x, y)| *x <= max_x && *y <= max_y)
+        .collect()
+}

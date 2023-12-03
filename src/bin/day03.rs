@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use aoc2023::initialize_aoc;
+use aoc2023::{create_adjacent_positions, create_adjacent_positions_limited, initialize_aoc};
 
 fn main() {
     let aoc = initialize_aoc();
@@ -45,11 +45,8 @@ fn main() {
         .filter_map(|run| {
             let mut has_adjacent_symbol = false;
             for ((x, y), _) in &run {
-                let found_adjacent = adjacent((*x, *y))
+                let found_adjacent = create_adjacent_positions_limited((*x, *y), (width, height))
                     .iter()
-                    .filter(|(x, y)| {
-                        *x >= 0 && *y >= 0 && *x <= width as isize && *y <= height as isize
-                    })
                     .any(|(ax, ay)| is_symbol(*map.get(&(*ax as usize, *ay as usize)).unwrap()));
                 if found_adjacent {
                     has_adjacent_symbol = true;
@@ -77,9 +74,9 @@ fn main() {
                 .iter()
                 .filter(|run| {
                     run.iter().any(|((rx, ry), _)| {
-                        adjacent((*rx, *ry))
+                        create_adjacent_positions((*rx, *ry))
                             .iter()
-                            .any(|(ax, ay)| *ax == x as isize && *ay == y as isize)
+                            .any(|(ax, ay)| *ax == x && *ay == y)
                     })
                 })
                 .collect::<Vec<_>>();
@@ -116,19 +113,4 @@ fn test_is_symbol() {
     assert!(is_symbol('%'));
     assert!(!is_symbol('.'));
     assert!(!is_symbol('6'));
-}
-
-fn adjacent((x, y): (usize, usize)) -> Vec<(isize, isize)> {
-    let x = x as isize;
-    let y = y as isize;
-    vec![
-        (x - 1, y - 1),
-        (x - 1, y),
-        (x - 1, y + 1),
-        (x, y - 1),
-        (x, y + 1),
-        (x + 1, y - 1),
-        (x + 1, y),
-        (x + 1, y + 1),
-    ]
 }

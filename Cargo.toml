@@ -10,6 +10,7 @@ debug = 1
 chumsky = "0.9.3"
 dotenv = "0.15.0"
 humantime = "2.1.0"
+num-traits = "0.2.17"
 rayon = "1.8.0"
 reqwest = { version = "0.11.22", features = ["blocking"] }
 tracing = "0.1.40"
