@@ -4,17 +4,33 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 pub struct Aoc {
     start: Instant,
+    start_measure: Option<(Instant, String)>,
     input: String,
 }
 impl Aoc {
     pub fn input(&self) -> String {
         self.input.clone()
     }
+    pub fn measure(&mut self, label: &str) {
+        if let Some((start_instant, prev_label)) = self.start_measure.take() {
+            tracing::info!(
+                "{prev_label}: {}",
+                humantime::format_duration(start_instant.elapsed())
+            );
+        }
+        self.start_measure = Some((Instant::now(), label.to_string()));
+    }
 }
 impl Drop for Aoc {
     fn drop(&mut self) {
+        if let Some((start_instant, prev_label)) = self.start_measure.take() {
+            tracing::info!(
+                "{prev_label}: {}",
+                humantime::format_duration(start_instant.elapsed())
+            );
+        }
         let elapsed = self.start.elapsed();
-        tracing::info!("Elapsed: {}", humantime::format_duration(elapsed));
+        tracing::info!("Total elapsed: {}", humantime::format_duration(elapsed));
     }
 }
 pub fn initialize_aoc() -> Aoc {
@@ -55,6 +71,7 @@ pub fn initialize_aoc() -> Aoc {
     Aoc {
         start: now,
         input: fetch_input(day_number),
+        start_measure: None,
     }
 }
 
