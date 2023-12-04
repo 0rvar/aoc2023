@@ -4,20 +4,18 @@ fn main() {
     let mut aoc = initialize_aoc();
     let input = aoc.input();
 
-    aoc.measure("Parsing");
-
     #[derive(Debug)]
     struct Scatch {
-        ticket_number: u32,
         winning_numbers: Vec<u32>,
         ticket_numbers: Vec<u32>,
     }
+
+    aoc.measure("Parsing");
 
     let games = input
         .lines()
         .map(|line| {
             let parts = line.split_once(": ").unwrap();
-            let ticket_number: u32 = parts.0.split(" ").last().unwrap().parse().unwrap();
             let mut winning_numbers = Vec::new();
             let mut ticket_numbers = Vec::new();
             let (winning, ticket) = parts.1.split_once(" | ").unwrap();
@@ -28,13 +26,13 @@ fn main() {
                 ticket_numbers.push(num.parse().unwrap());
             }
             Scatch {
-                ticket_number,
                 winning_numbers,
                 ticket_numbers,
             }
         })
         .collect::<Vec<_>>();
 
+    aoc.measure("day1");
     let winning_numbers = games
         .iter()
         .map(|game| {
@@ -48,14 +46,13 @@ fn main() {
         })
         .collect::<Vec<_>>();
 
-    tracing::info!(
-        "Part 1: {:#?}",
-        winning_numbers
-            .iter()
-            .map(|num| if *num > 0 { 2_u32.pow(*num - 1) } else { 0 })
-            .sum::<u32>()
-    );
+    let day1 = winning_numbers
+        .iter()
+        .map(|num| if *num > 0 { 2_u32.pow(*num - 1) } else { 0 })
+        .sum::<u32>();
+    tracing::info!("Part 1: {:#?}", day1);
 
+    aoc.measure("day2");
     let mut number_of_tickets = vec![1u32; winning_numbers.len()];
     for (index, score) in winning_numbers.iter().enumerate() {
         let num_copies = number_of_tickets[index];
@@ -65,6 +62,6 @@ fn main() {
             }
         }
     }
-
-    tracing::info!("Part 2: {:#?}", number_of_tickets.iter().sum::<u32>());
+    let day2 = number_of_tickets.iter().sum::<u32>();
+    tracing::info!("Part 2: {:#?}", day2);
 }
