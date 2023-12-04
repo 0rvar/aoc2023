@@ -15,10 +15,10 @@ fn main() {
     let games = input
         .lines()
         .map(|line| {
-            let parts = line.split_once(": ").unwrap();
-            let mut winning_numbers = Vec::new();
-            let mut ticket_numbers = Vec::new();
-            let (winning, ticket) = parts.1.split_once(" | ").unwrap();
+            let numbers = line.split_once(':').unwrap().1;
+            let mut winning_numbers = Vec::with_capacity(16);
+            let mut ticket_numbers = Vec::with_capacity(32);
+            let (winning, ticket) = numbers.split_once('|').unwrap();
             for num in winning.split_whitespace() {
                 winning_numbers.push(num.parse().unwrap());
             }
@@ -33,6 +33,7 @@ fn main() {
         .collect::<Vec<_>>();
 
     aoc.measure("day1");
+
     let winning_numbers = games
         .iter()
         .map(|game| {
@@ -50,9 +51,11 @@ fn main() {
         .iter()
         .map(|num| if *num > 0 { 2_u32.pow(*num - 1) } else { 0 })
         .sum::<u32>();
+
     tracing::info!("Part 1: {:#?}", day1);
 
     aoc.measure("day2");
+
     let mut number_of_tickets = vec![1u32; winning_numbers.len()];
     for (index, score) in winning_numbers.iter().enumerate() {
         let num_copies = number_of_tickets[index];
@@ -62,6 +65,8 @@ fn main() {
             }
         }
     }
+
     let day2 = number_of_tickets.iter().sum::<u32>();
+
     tracing::info!("Part 2: {:#?}", day2);
 }
