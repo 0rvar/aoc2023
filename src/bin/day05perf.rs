@@ -1,7 +1,6 @@
 use std::ops::RangeInclusive;
 
 use aoc2023::initialize_aoc;
-use chumsky::primitive::Container;
 
 fn main() {
     let mut aoc = initialize_aoc();
