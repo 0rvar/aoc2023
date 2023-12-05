@@ -84,21 +84,16 @@ struct Transform {
 
 fn transform_resources(
     steps: &[TransformStep],
-    initial_resources: Vec<RangeInclusive<u64>>,
+    mut resources: Vec<RangeInclusive<u64>>,
 ) -> Vec<RangeInclusive<u64>> {
-    let mut resources = initial_resources.clone();
     for TransformStep(transforms) in steps {
         let mut index = 0;
         while index < resources.len() {
             let resource = resources[index].clone();
             for Transform { from, to } in transforms {
-                let adjust = |range: RangeInclusive<u64>, offset: i64| {
-                    ((*range.start() as i64 + offset) as u64)
-                        ..=((*range.end() as i64 + offset) as u64)
-                };
+                let offset = *to as i64 - *from.start() as i64;
                 if from.contains(&resource.start()) {
-                    let offset = *to as i64 - *from.start() as i64;
-                    let new_resource = adjust(
+                    let new_resource = offset_range(
                         (*resource.start())..=*resource.end().min(from.end()),
                         offset,
                     );
@@ -108,14 +103,12 @@ fn transform_resources(
                     resources[index] = new_resource;
                     break;
                 } else if from.contains(&resource.end()) {
-                    let offset = *to as i64 - *from.start() as i64;
-                    let new_resource = adjust(*from.start()..=*resource.end(), offset);
+                    let new_resource = offset_range(*from.start()..=*resource.end(), offset);
                     resources.push(*resource.start()..=(*from.start() - 1));
                     resources[index] = new_resource;
                     break;
                 } else if is_overlapping(&resource, &from) {
-                    let offset = *to as i64 - *from.start() as i64;
-                    let new_resource = adjust((*from.start())..=*from.end(), offset);
+                    let new_resource = offset_range((*from.start())..=*from.end(), offset);
                     resources.push((*resource.start())..=(*resource.start() - 1));
                     resources.push((*from.end() + 1)..=*resource.end());
                     resources[index] = new_resource;
@@ -125,7 +118,6 @@ fn transform_resources(
             index += 1;
         }
     }
-
     resources
 }
 
@@ -141,4 +133,10 @@ fn test_is_overlapping() {
     assert!(is_overlapping(&(1..=5), &(2..=3)));
     assert!(is_overlapping(&(2..=3), &(1..=5)));
     assert!(!is_overlapping(&(1..=2), &(3..=4)));
+}
+
+fn offset_range(range: RangeInclusive<u64>, offset: i64) -> RangeInclusive<u64> {
+    let start = (*range.start() as i64 + offset) as u64;
+    let end = (*range.end() as i64 + offset) as u64;
+    start..=end
 }
