@@ -50,7 +50,7 @@ fn main() {
 
     aoc.measure("Part 1");
 
-    let transformed = transform_resouces(&transforms, goal_seeds);
+    let transformed = transform_resources(&transforms, goal_seeds);
     let part1 = transformed.iter().min_by_key(|(_, x)| x).unwrap();
 
     tracing::info!("Part 1: {:?}", part1);
@@ -71,7 +71,7 @@ fn main() {
     tracing::debug!("Number of seeds: {}", goal_seeds.len());
 
     aoc.measure("Part 2");
-    let transformed = transform_resouces(&transforms, goal_seeds);
+    let transformed = transform_resources(&transforms, goal_seeds);
     let part2 = transformed.iter().min_by_key(|(_, x)| x).unwrap();
     tracing::info!("Part 2: {:?}", part2);
 }
@@ -82,7 +82,7 @@ struct Transform<'a> {
     steps: Vec<(u32, u32, u32)>,
 }
 
-fn transform_resouces<'a>(
+fn transform_resources<'a>(
     transforms: &'a [Transform],
     initial_resources: Vec<(&'a str, u32)>,
 ) -> Vec<(&'a str, u32)> {

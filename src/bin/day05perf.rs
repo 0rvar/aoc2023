@@ -46,7 +46,7 @@ fn main() {
 
     aoc.measure("Part 1");
 
-    let transformed = transform_resouces(&steps, goal_seeds);
+    let transformed = transform_resources(&steps, goal_seeds);
 
     let part1 = transformed.iter().map(|r| r.start()).min().unwrap();
 
@@ -70,7 +70,7 @@ fn main() {
 
     aoc.measure("Part 2");
 
-    let transformed = transform_resouces(&steps, goal_seeds);
+    let transformed = transform_resources(&steps, goal_seeds);
 
     let part2 = transformed.iter().map(|x| x.start()).min().unwrap();
 
@@ -83,7 +83,7 @@ struct Transform {
     to: u64,
 }
 
-fn transform_resouces(
+fn transform_resources(
     steps: &[TransformStep],
     initial_resources: Vec<RangeInclusive<u64>>,
 ) -> Vec<RangeInclusive<u64>> {
