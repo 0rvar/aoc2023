@@ -1,25 +1,20 @@
 use aoc2023::initialize_aoc;
+use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 
 fn main() {
     let mut aoc = initialize_aoc();
     let input = aoc.input();
 
-    let input = include_str!("day05_ex.txt");
+    // let input = include_str!("day05_ex.txt");
 
     aoc.measure("Parsing");
 
     let (goal, rest) = input.split_once("\n\n").unwrap();
-    let (_, goal_seeds) = goal.split_once(": ").unwrap();
-    let goal_seeds = goal_seeds
+    let (_, goal_seeds_line) = goal.split_once(": ").unwrap();
+    let goal_seeds = goal_seeds_line
         .split_whitespace()
         .map(|x| ("seed", x.parse::<u32>().unwrap()))
         .collect::<Vec<_>>();
-
-    struct Transform<'a> {
-        from: &'a str,
-        to: &'a str,
-        steps: Vec<(u32, u32, u32)>,
-    }
 
     let transforms = rest
         .split("\n\n")
@@ -53,25 +48,60 @@ fn main() {
         })
         .collect::<Vec<_>>();
 
-    let transformed = transforms.iter().fold(goal_seeds, |resources, transform| {
-        assert_eq!(resources.first().unwrap().0, transform.from);
-        let next_resource_name = transform.to;
-        let next_resources = resources
-            .iter()
-            .map(|(_, id)| {
-                for (transform_to_start, transform_from_start, len) in &transform.steps {
-                    if transform_from_start <= id && *id < (transform_from_start + len) {
-                        let offset = id - transform_from_start;
-                        return (next_resource_name, transform_to_start + offset);
-                    }
-                }
-                (next_resource_name, *id)
-            })
-            .collect::<Vec<_>>();
-        next_resources
-    });
+    aoc.measure("Part 1");
 
+    let transformed = transform_resouces(&transforms, goal_seeds);
     let part1 = transformed.iter().min_by_key(|(_, x)| x).unwrap();
 
-    tracing::info!("{:?}", part1);
+    tracing::info!("Part 1: {:?}", part1);
+
+    aoc.measure("Part 2: parse");
+
+    let goal_seeds = goal_seeds_line
+        .split_whitespace()
+        .map(|x| x.parse::<u32>().unwrap())
+        .collect::<Vec<_>>()
+        .chunks_exact(2)
+        .flat_map(|nums| {
+            let start = nums[0];
+            let len = nums[1];
+            (start..(start + len)).map(|id| ("seed", id))
+        })
+        .collect::<Vec<_>>();
+    tracing::debug!("Number of seeds: {}", goal_seeds.len());
+
+    aoc.measure("Part 2");
+    let transformed = transform_resouces(&transforms, goal_seeds);
+    let part2 = transformed.iter().min_by_key(|(_, x)| x).unwrap();
+    tracing::info!("Part 2: {:?}", part2);
+}
+
+struct Transform<'a> {
+    from: &'a str,
+    to: &'a str,
+    steps: Vec<(u32, u32, u32)>,
+}
+
+fn transform_resouces<'a>(
+    transforms: &'a [Transform],
+    initial_resources: Vec<(&'a str, u32)>,
+) -> Vec<(&'a str, u32)> {
+    initial_resources
+        .par_iter()
+        .map(|resource| {
+            transforms
+                .iter()
+                .fold(*resource, |(resource_name, id), transform| {
+                    assert_eq!(resource_name, transform.from);
+                    let next_resource_name = transform.to;
+                    for (transform_to_start, transform_from_start, len) in &transform.steps {
+                        if *transform_from_start <= id && id < (transform_from_start + len) {
+                            let offset = id - transform_from_start;
+                            return (next_resource_name, transform_to_start + offset);
+                        }
+                    }
+                    (next_resource_name, id)
+                })
+        })
+        .collect::<Vec<_>>()
 }
