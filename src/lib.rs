@@ -13,7 +13,7 @@ impl Aoc {
     }
     pub fn measure(&mut self, label: &str) {
         if let Some((start_instant, prev_label)) = self.start_measure.take() {
-            tracing::info!(
+            tracing::warn!(
                 "{prev_label}: {}",
                 humantime::format_duration(start_instant.elapsed())
             );
@@ -24,13 +24,13 @@ impl Aoc {
 impl Drop for Aoc {
     fn drop(&mut self) {
         if let Some((start_instant, prev_label)) = self.start_measure.take() {
-            tracing::info!(
+            tracing::warn!(
                 "{prev_label}: {}",
                 humantime::format_duration(start_instant.elapsed())
             );
         }
         let elapsed = self.start.elapsed();
-        tracing::info!("Total elapsed: {}", humantime::format_duration(elapsed));
+        tracing::warn!("Total elapsed: {}", humantime::format_duration(elapsed));
     }
 }
 pub fn initialize_aoc() -> Aoc {
