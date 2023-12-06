@@ -1,4 +1,4 @@
-use aoc2023::initialize_aoc;
+use aoc2023::{initialize_aoc, IntegerSquareRoot};
 
 fn main() {
     let mut aoc = initialize_aoc();
@@ -52,14 +52,15 @@ fn main() {
 
     aoc.measure("Part 2");
 
-    let mut num_winning_strategies = 0;
+    let a = -1_f64;
+    let b = race_time as f64;
+    let c = -(race_record as f64);
+    let roots = (
+        (-b - (b * b - 4_f64 * a * c).sqrt()) / (2_f64 * a),
+        (-b + (b * b - 4_f64 * a * c).sqrt()) / (2_f64 * a),
+    );
 
-    for hold_time in 1..race_time {
-        let speed = hold_time;
-        if speed * (race_time - hold_time) > race_record {
-            num_winning_strategies += 1;
-        }
-    }
+    let num_winning_strategies = roots.0.max(roots.1).floor() - roots.0.min(roots.1).ceil() + 1_f64;
 
     tracing::info!("Part 2: {num_winning_strategies}");
 }
