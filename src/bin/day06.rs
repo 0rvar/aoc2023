@@ -1,4 +1,4 @@
-use aoc2023::{initialize_aoc, IntegerSquareRoot};
+use aoc2023::initialize_aoc;
 
 fn main() {
     let mut aoc = initialize_aoc();
