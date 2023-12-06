@@ -4,33 +4,45 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 pub struct Aoc {
     start: Instant,
-    start_measure: Option<(Instant, String)>,
+    measurements: Vec<(std::time::Duration, &'static str)>,
+    current_measure: Option<(Instant, &'static str)>,
+    reported_already: bool,
     input: String,
 }
 impl Aoc {
     pub fn input(&self) -> String {
         self.input.clone()
     }
-    pub fn measure(&mut self, label: &str) {
-        if let Some((start_instant, prev_label)) = self.start_measure.take() {
-            tracing::warn!(
-                "{prev_label}: {}",
-                humantime::format_duration(start_instant.elapsed())
-            );
+    pub fn measure(&mut self, label: &'static str) {
+        self.end_measure();
+        self.current_measure = Some((Instant::now(), label));
+    }
+    fn end_measure(&mut self) {
+        if let Some((instant, label)) = self.current_measure.take() {
+            self.measurements.push((instant.elapsed(), label));
         }
-        self.start_measure = Some((Instant::now(), label.to_string()));
+    }
+    pub fn done(&mut self) {
+        if self.reported_already {
+            return;
+        }
+        let total_elapsed = self.start.elapsed();
+        self.end_measure();
+        let mut measurements = Vec::new();
+        std::mem::swap(&mut self.measurements, &mut measurements);
+        for (duration, label) in measurements {
+            tracing::warn!("{}: {}", label, humantime::format_duration(duration));
+        }
+        tracing::warn!(
+            "Total elapsed: {}",
+            humantime::format_duration(total_elapsed)
+        );
+        self.reported_already = true;
     }
 }
 impl Drop for Aoc {
     fn drop(&mut self) {
-        if let Some((start_instant, prev_label)) = self.start_measure.take() {
-            tracing::warn!(
-                "{prev_label}: {}",
-                humantime::format_duration(start_instant.elapsed())
-            );
-        }
-        let elapsed = self.start.elapsed();
-        tracing::warn!("Total elapsed: {}", humantime::format_duration(elapsed));
+        self.done();
     }
 }
 pub fn initialize_aoc() -> Aoc {
@@ -64,14 +76,16 @@ pub fn initialize_aoc() -> Aoc {
         .parse::<u8>()
         .expect("Binary is not named dayNN");
 
-    let now = Instant::now();
-
     tracing::info!("Advent of Code, day {}", day_number);
 
+    let input = fetch_input(day_number);
+
     Aoc {
-        start: now,
-        input: fetch_input(day_number),
-        start_measure: None,
+        start: Instant::now(),
+        current_measure: None,
+        measurements: vec![],
+        reported_already: false,
+        input,
     }
 }
 
@@ -137,4 +151,28 @@ pub fn create_adjacent_positions_limited<T: num_traits::Num + PartialOrd + Copy>
         .into_iter()
         .filter(|(x, y)| *x <= max_x && *y <= max_y)
         .collect()
+}
+
+pub trait IntegerSquareRoot {
+    fn sqrt(self) -> Self;
+}
+impl IntegerSquareRoot for u64 {
+    fn sqrt(self) -> Self {
+        (self as f64).sqrt() as Self
+    }
+}
+impl IntegerSquareRoot for i64 {
+    fn sqrt(self) -> Self {
+        (self as f64).sqrt() as Self
+    }
+}
+impl IntegerSquareRoot for u32 {
+    fn sqrt(self) -> Self {
+        (self as f64).sqrt() as Self
+    }
+}
+impl IntegerSquareRoot for i32 {
+    fn sqrt(self) -> Self {
+        (self as f64).sqrt() as Self
+    }
 }
