@@ -1,4 +1,4 @@
-use aoc2023::initialize_aoc;
+use aoc2023::{initialize_aoc, quadratic_formula_roots};
 
 fn main() {
     let mut aoc = initialize_aoc();
@@ -11,10 +11,10 @@ fn main() {
     let record_distances_str = distance.split_once(':').unwrap().1;
 
     let times = times_str
-        .split_whitespace()
+        .split_ascii_whitespace()
         .map(|x| x.parse::<u64>().unwrap());
     let record_distances = record_distances_str
-        .split_whitespace()
+        .split_ascii_whitespace()
         .map(|x| x.parse::<u64>().unwrap());
 
     let races = times.zip(record_distances).collect::<Vec<_>>();
@@ -23,44 +23,30 @@ fn main() {
 
     let margin_of_error = races
         .iter()
-        .map(|(time, record_distance)| {
-            let mut num_winning_strategies = 0;
-
-            for hold_time in 1..*time {
-                let speed = hold_time;
-                if speed * (time - hold_time) > *record_distance {
-                    num_winning_strategies += 1;
-                }
-            }
-
-            num_winning_strategies
-        })
+        .map(|(time, record_distance)| solve(*time, *record_distance))
         .product::<u64>();
     tracing::info!("Part 1: {margin_of_error}");
 
     aoc.measure("Part 2 parsing");
     let race_time = times_str
-        .split_whitespace()
+        .split_ascii_whitespace()
         .collect::<String>()
         .parse::<u64>()
         .unwrap();
     let race_record = record_distances_str
-        .split_whitespace()
+        .split_ascii_whitespace()
         .collect::<String>()
         .parse::<u64>()
         .unwrap();
 
     aoc.measure("Part 2");
 
-    let a = -1_f64;
-    let b = race_time as f64;
-    let c = -(race_record as f64);
-    let roots = (
-        (-b - (b * b - 4_f64 * a * c).sqrt()) / (2_f64 * a),
-        (-b + (b * b - 4_f64 * a * c).sqrt()) / (2_f64 * a),
-    );
-
-    let num_winning_strategies = roots.0.max(roots.1).floor() - roots.0.min(roots.1).ceil() + 1_f64;
+    let num_winning_strategies = solve(race_time, race_record);
 
     tracing::info!("Part 2: {num_winning_strategies}");
+}
+
+fn solve(race_time: u64, record_distance: u64) -> u64 {
+    let roots = quadratic_formula_roots(-1_f64, race_time as f64, -(record_distance as f64));
+    (roots.0.max(roots.1).floor() - roots.0.min(roots.1).ceil() + 1_f64) as u64
 }

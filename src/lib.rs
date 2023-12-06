@@ -176,3 +176,10 @@ impl IntegerSquareRoot for i32 {
         (self as f64).sqrt() as Self
     }
 }
+
+pub fn quadratic_formula_roots(a: f64, b: f64, c: f64) -> (f64, f64) {
+    (
+        (-b - (b * b - 4_f64 * a * c).sqrt()) / (2_f64 * a),
+        (-b + (b * b - 4_f64 * a * c).sqrt()) / (2_f64 * a),
+    )
+}
