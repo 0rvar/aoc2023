@@ -29,15 +29,15 @@ fn main() {
 
         cmp_cards(a.0, b.0, false)
     });
-    let ranked = ranked.iter().enumerate().collect::<Vec<_>>();
+    let ranked = ranked.into_iter().enumerate().collect::<Vec<_>>();
 
     let part1 = ranked
-        .iter()
-        .map(|(rank, (_, bid, _, _))| (*rank as u32 + 1) * *bid)
+        .into_iter()
+        .map(|(rank, (_, bid, _, _))| (rank as u32 + 1) * bid)
         .sum::<u32>();
 
     aoc.measure("Part 2");
-    let mut ranked = bet_list.clone();
+    let mut ranked = bet_list;
     ranked.sort_by(|a, b| {
         let hand_cmp = (a.3 as u8).cmp(&(b.3 as u8));
         if !hand_cmp.is_eq() {
@@ -46,11 +46,11 @@ fn main() {
 
         cmp_cards(a.0, b.0, true)
     });
-    let ranked = ranked.iter().enumerate().collect::<Vec<_>>();
+    let ranked = ranked.into_iter().enumerate().collect::<Vec<_>>();
 
     let part2 = ranked
-        .iter()
-        .map(|(rank, (_, bid, _, _))| (*rank as u32 + 1) * *bid)
+        .into_iter()
+        .map(|(rank, (_, bid, _, _))| (rank as u32 + 1) * bid)
         .sum::<u32>();
 
     aoc.done();
@@ -61,10 +61,11 @@ fn main() {
 
 fn cmp_cards(a: &str, b: &str, interesting: bool) -> Ordering {
     for (a, b) in a.as_bytes().iter().zip(b.as_bytes()) {
-        let ordering = card_value(*a, interesting).cmp(&card_value(*b, interesting));
-        if !ordering.is_eq() {
-            return ordering;
+        if a == b {
+            continue;
         }
+        let ordering = card_value(*a, interesting).cmp(&card_value(*b, interesting));
+        return ordering;
     }
     panic!("Equal cards");
 }
