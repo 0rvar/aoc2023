@@ -9,6 +9,7 @@ fn main() {
     let mut aoc = initialize_aoc();
     let input = aoc.input();
 
+    aoc.measure("Parse");
     let bet_list = input
         .lines()
         .map(|line| {
@@ -20,6 +21,7 @@ fn main() {
         })
         .collect::<Vec<_>>();
 
+    aoc.measure("Part 1");
     let mut ranked = bet_list.clone();
     ranked.sort_by(|a, b| {
         let hand_cmp = (a.2 as u8).cmp(&(b.2 as u8));
@@ -35,8 +37,8 @@ fn main() {
         .iter()
         .map(|(rank, (_, bid, _, _))| (*rank as u32 + 1) * *bid)
         .sum::<u32>();
-    tracing::info!("Part 1: {part1:#?}");
 
+    aoc.measure("Part 2");
     let mut ranked = bet_list.clone();
     ranked.sort_by(|a, b| {
         let hand_cmp = (a.3 as u8).cmp(&(b.3 as u8));
@@ -53,6 +55,9 @@ fn main() {
         .map(|(rank, (_, bid, _, _))| (*rank as u32 + 1) * *bid)
         .sum::<u32>();
 
+    aoc.done();
+
+    tracing::info!("Part 1: {part1:#?}");
     tracing::info!("Part 2: {part2:#?}");
 }
 
