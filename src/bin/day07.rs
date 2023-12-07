@@ -1,9 +1,7 @@
-use std::{
-    cmp::Ordering,
-    collections::{HashMap, HashSet},
-};
+use std::cmp::Ordering;
 
 use aoc2023::initialize_aoc;
+use itertools::Itertools;
 
 fn main() {
     let mut aoc = initialize_aoc();
@@ -100,13 +98,29 @@ enum HandType {
 }
 
 fn parse_hand(hand: &[u8]) -> HandType {
-    let card_counts = hand.iter().fold(HashMap::new(), |mut map, card| {
-        *(map.entry(card).or_insert(0)) += 1u32;
-        map
-    });
-    let mut counts = card_counts.values().map(|x| *x).collect::<Vec<_>>();
-    counts.sort();
+    let counts = hand.iter().copied().counts();
+    let card_counts = counts.into_values().sorted().collect::<Vec<_>>();
 
+    counts_to_hand(&card_counts[..])
+}
+
+fn parse_interesting_hand(hand: &[u8]) -> HandType {
+    let joker_count = hand.iter().filter(|c| **c == b'J').count();
+    let counts = hand.iter().copied().filter(|c| *c != b'J').counts();
+    let mut card_counts = counts.into_values().sorted().collect::<Vec<_>>();
+
+    if card_counts.len() == 0 {
+        card_counts.push(joker_count);
+    } else {
+        let max_index = card_counts.iter().position_max().unwrap_or(0);
+        card_counts[max_index] += joker_count;
+        card_counts.sort();
+    }
+
+    counts_to_hand(&card_counts[..])
+}
+
+fn counts_to_hand(counts: &[usize]) -> HandType {
     match &counts[..] {
         [5] => HandType::FiveOfAKind,
         [1, 4] => HandType::FourOfAKind,
@@ -116,58 +130,5 @@ fn parse_hand(hand: &[u8]) -> HandType {
         [1, 1, 1, 2] => HandType::OnePair,
         [1, 1, 1, 1, 1] => HandType::HighCard,
         what => panic!("Did not parse {what:?}"),
-    }
-}
-
-fn parse_interesting_hand(hand: &[u8]) -> HandType {
-    let (joker_count, card_counts) =
-        hand.iter()
-            .fold((0u32, HashMap::new()), |(joker_count, mut map), card| {
-                if *card == b'J' {
-                    (joker_count + 1, map)
-                } else {
-                    *(map.entry(card).or_insert(0)) += 1u32;
-                    (joker_count, map)
-                }
-            });
-    let mut counts = card_counts.values().map(|x| *x).collect::<Vec<_>>();
-    counts.sort();
-
-    match joker_count {
-        0 => match &counts[..] {
-            [5] => HandType::FiveOfAKind,
-            [1, 4] => HandType::FourOfAKind,
-            [2, 3] => HandType::FullHouse,
-            [1, 1, 3] => HandType::ThreeOfAkind,
-            [1, 2, 2] => HandType::TwoPair,
-            [1, 1, 1, 2] => HandType::OnePair,
-            [1, 1, 1, 1, 1] => HandType::HighCard,
-            what => panic!("Did not parse {what:?}"),
-        },
-        1 => match &counts[..] {
-            [4] => HandType::FiveOfAKind,
-            [1, 3] => HandType::FourOfAKind,
-            [2, 2] => HandType::FullHouse,
-            [1, 1, 2] => HandType::ThreeOfAkind,
-            [1, 1, 1, 1] => HandType::OnePair,
-            what => panic!("Did not parse {what:?}"),
-        },
-        2 => match &counts[..] {
-            [3] => HandType::FiveOfAKind,
-            [1, 2] => HandType::FourOfAKind,
-            [1, 1, 1] => HandType::ThreeOfAkind,
-            what => panic!("Did not parse {what:?}"),
-        },
-        3 => match &counts[..] {
-            [2] => HandType::FiveOfAKind,
-            [1, 1] => HandType::FourOfAKind,
-            what => panic!("Did not parse {what:?}"),
-        },
-        4 => match &counts[..] {
-            [1] => HandType::FiveOfAKind,
-            what => panic!("Did not parse {what:?}"),
-        },
-        5 => HandType::FiveOfAKind,
-        _ => panic!("More than 5 Js"),
     }
 }
