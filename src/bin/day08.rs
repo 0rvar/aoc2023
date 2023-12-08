@@ -33,43 +33,30 @@ fn main() {
 
     aoc.measure("P2");
 
-    let mut current_nodes = map
+    let starting_nodes = map
         .keys()
         .copied()
         .filter(|node| node.ends_with("A"))
         .collect::<Vec<_>>();
-    let mut cycled_instructions = instructions.chars().cycle();
-    let mut steps: u64 = 0;
-    let nodes_count = current_nodes.len();
     let mut cycles = vec![];
-    loop {
-        steps += 1;
-        let instruction = cycled_instructions.next().unwrap();
-        let mut done = true;
-        for index in 0..nodes_count {
-            let position = current_nodes[index];
-            if position == "" {
-                continue;
-            }
-            done = false;
+    for position in starting_nodes {
+        let mut cycled_instructions = instructions.chars().cycle();
+        let mut steps: u64 = 0;
+
+        let mut position = position;
+        loop {
+            steps += 1;
+            let instruction = cycled_instructions.next().unwrap();
             let map_guide = map.get(position).unwrap();
-            let position = if instruction == 'L' {
+            position = if instruction == 'L' {
                 map_guide.0
             } else {
                 map_guide.1
             };
             if position.ends_with('Z') {
                 cycles.push(steps);
-                current_nodes[index] = "";
-            } else {
-                current_nodes[index] = position;
+                break;
             }
-        }
-        if done {
-            break;
-        }
-        if steps % 10_000_000 == 0 {
-            println!("Steps {}", steps);
         }
     }
 
@@ -79,6 +66,7 @@ fn main() {
     }
 
     aoc.done();
+
     tracing::info!("Part 1: {part1}");
     tracing::info!("Part 2: {lcm}");
 }
