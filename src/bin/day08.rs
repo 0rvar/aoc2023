@@ -1,7 +1,6 @@
-use std::{cmp::Ordering, collections::HashMap};
+use std::collections::HashMap;
 
 use aoc2023::initialize_aoc;
-use itertools::Itertools;
 use num::Integer;
 
 fn main() {
