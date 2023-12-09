@@ -11,7 +11,6 @@ fn main() {
     // "
     // .trim()
     // .to_string();
-    // let input = include_str!("message.txt");
 
     aoc.measure("Parse");
     let sequences = input
@@ -38,7 +37,7 @@ fn main() {
 
 fn next_value(sequence: &[isize]) -> isize {
     let last = *sequence.last().unwrap();
-    if last == 0 {
+    if sequence.iter().all(|x| *x == 0) {
         return last;
     }
 
