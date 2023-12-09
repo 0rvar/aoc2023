@@ -4,14 +4,6 @@ fn main() {
     let mut aoc = initialize_aoc();
     let input = aoc.input();
 
-    // let input = "
-    //     0 3 6 9 12 15
-    //     1 3 6 10 15 21
-    //     10 13 16 21 30 45
-    // "
-    // .trim()
-    // .to_string();
-
     aoc.measure("Parse");
     let sequences = input
         .lines()
