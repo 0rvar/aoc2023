@@ -23,16 +23,25 @@ fn main() {
         })
         .collect::<Vec<_>>();
 
-    tracing::debug!("{sequences:?}");
+    aoc.measure("P1");
     let next_values = sequences
         .iter()
         .map(|sequence| next_value(&sequence))
         .collect::<Vec<_>>();
 
+    aoc.measure("P2");
+    let prev_values = sequences
+        .iter()
+        .map(|sequence| {
+            let reversed = sequence.iter().copied().rev().collect::<Vec<_>>();
+            next_value(&reversed)
+        })
+        .collect::<Vec<_>>();
+
     aoc.done();
 
     tracing::info!("Part 1: {}", next_values.iter().sum::<isize>());
-    // tracing::info!("Part 2: {part2}");
+    tracing::info!("Part 2: {}", prev_values.iter().sum::<isize>());
 }
 
 fn next_value(sequence: &[isize]) -> isize {
@@ -48,13 +57,5 @@ fn next_value(sequence: &[isize]) -> isize {
         prev = *current;
     }
     let next_difference = next_value(&last_differences);
-
-    tracing::debug!("Sequence: {sequence:?}");
-    tracing::debug!(
-        "{} + {} = {}",
-        last,
-        next_difference,
-        last + next_difference,
-    );
     last + next_difference
 }
