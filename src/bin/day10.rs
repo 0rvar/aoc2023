@@ -1,48 +1,15 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
-use aoc2023::{create_adjacent_positions, initialize_aoc};
+use aoc2023::initialize_aoc;
 
 fn main() {
     let mut aoc = initialize_aoc();
     let input = aoc.input();
 
-    // let input = "
-    // ...........
-    // .S-------7.
-    // .|F-----7|.
-    // .||.....||.
-    // .||.....||.
-    // .|L-7.F-J|.
-    // .|..|.|..|.
-    // .L--J.L--J.
-    // ...........
-    // ";
-    // let input = "
-    // ..........
-    // .S------7.
-    // .|F----7|.
-    // .||....||.
-    // .||....||.
-    // .|L-7F-J|.
-    // .|..||..|.
-    // .L--JL--J.
-    // ..........
-    // ";
-    let input = "
-    .F----7F7F7F7F-7....
-    .|F--7||||||||FJ....
-    .||.FJ||||||||L7....
-    FJL7L7LJLJ||LJ.L-7..
-    L--J.L7...LJS7F-7L7.
-    ....F-J..F7FJ|L7L7L7
-    ....L7.F7||L7|.L7L7|
-    .....|FJLJ|FJ|F7|.LJ
-    ....FJL-7.||.||||...
-    ....L---J.LJ.LJLJ...
-    ";
-
     aoc.measure("Parse");
     let mut map = HashMap::new();
+    let mut width = 0;
+    let mut height = 0;
     let mut animal_position = (0, 0);
     for (row, line) in input.trim().lines().enumerate() {
         for (column, char) in line.trim().chars().enumerate() {
@@ -50,20 +17,22 @@ fn main() {
                 animal_position = (row, column);
             }
             map.insert((row, column), char);
+            width = width.max(column + 1);
         }
+        height = height.max(row + 1);
     }
 
     aoc.measure("P1");
     let mut prev_position = animal_position.clone();
     let mut steps = 1;
-    let mut pipe_positions = HashSet::new();
+    let mut pipe_positions = Vec::new();
     let mut position: (usize, usize) = walk(&animal_position, &prev_position, &map);
-    pipe_positions.insert(animal_position);
-    pipe_positions.insert(position);
+    pipe_positions.push(animal_position);
+    pipe_positions.push(position);
     while position != animal_position {
         let prev = position;
         position = walk(&position, &prev_position, &map);
-        pipe_positions.insert(position);
+        pipe_positions.push(position);
         prev_position = prev;
         steps += 1;
     }
@@ -72,55 +41,78 @@ fn main() {
 
     aoc.measure("P2");
 
-    let raycast_map = map
+    let mut raycast_map = map
         .iter()
         .map(|(pos, c)| {
             if pipe_positions.contains(pos) {
-                (*pos, *c)
+                ((pos.0 * 2, pos.1 * 2), *c)
             } else {
-                (*pos, ' ')
+                ((pos.0 * 2 + 1, pos.1 * 2 + 1), '.')
             }
         })
         .collect::<HashMap<_, _>>();
 
-    let enclosed_tiles = map
+    let translated_pipe_positions = pipe_positions
+        .into_iter()
+        .map(|(a, b)| (a * 2, b * 2))
+        .collect::<Vec<_>>();
+
+    let mut prev_pos = *translated_pipe_positions.last().unwrap();
+    for pos in &translated_pipe_positions {
+        let difference = (
+            pos.0 as isize - prev_pos.0 as isize,
+            pos.1 as isize - prev_pos.1 as isize,
+        );
+        let step = (difference.0 / 2, difference.1 / 2);
+        let insert_char = if step.0 == 0 { '-' } else { '|' };
+        raycast_map.insert(
+            (
+                (pos.0 as isize - step.0) as usize,
+                (pos.1 as isize - step.1) as usize,
+            ),
+            insert_char,
+        );
+
+        prev_pos = *pos;
+    }
+
+    let enclosed_tiles = raycast_map
         .keys()
-        .filter(|pos| *map.get(pos).unwrap() == '.' && raycast(*pos, &raycast_map) % 2 == 1)
+        .filter(|pos| {
+            *raycast_map.get(pos).unwrap() == '.'
+                && raycast(*pos, &raycast_map, width * 2, height * 2) % 2 == 1
+        })
         .collect::<Vec<_>>();
     let part2 = enclosed_tiles.len();
 
-    for (row, line) in input.trim().lines().enumerate() {
-        let line = line
-            .trim()
-            .chars()
-            .enumerate()
-            .map(|(index, c)| {
-                if c == '.' {
-                    if enclosed_tiles.contains(&&(row, index)) {
-                        'X'
-                    } else {
-                        ' '
-                    }
-                // } else if *raycast_map.get(&(row, index)).unwrap() != ' ' {
-                // c
-                } else {
-                    let char = match c {
-                        '.' => '•',
-                        '-' => '═',
-                        'F' => '╔',
-                        '|' => '║',
-                        'L' => '╚',
-                        '7' => '╗',
-                        'J' => '╝',
-                        'S' => '?',
-                        _ => panic!("Unknown {c}"),
-                    };
-                    char
-                }
-            })
-            .collect::<String>();
-        println!("{line}");
-    }
+    // for row in 0..height * 2 {
+    //     for column in 0..width * 2 {
+    //         let c = raycast_map.get(&(row, column)).unwrap_or(&' ');
+    //         let char = if *c == '.' {
+    //             if enclosed_tiles.contains(&&(row, column)) {
+    //                 'X'
+    //             } else {
+    //                 '0'
+    //             }
+    //         } else {
+    //             match c {
+    //                 '.' => '•',
+    //                 '-' => '═',
+    //                 'F' => '╔',
+    //                 '|' => '║',
+    //                 'L' => '╚',
+    //                 '7' => '╗',
+    //                 'J' => '╝',
+    //                 'S' => '?',
+    //                 ' ' => ' ',
+    //                 _ => panic!("Unknown {c}"),
+    //             }
+    //             // }
+    //         };
+    //         print!("{char}");
+    //     }
+    //     println!();
+    // }
 
     aoc.done();
 
@@ -190,34 +182,36 @@ fn walk(
     return adjacent;
 }
 
-fn raycast(point: &(usize, usize), map: &HashMap<(usize, usize), char>) -> u32 {
+fn raycast(
+    point: &(usize, usize),
+    map: &HashMap<(usize, usize), char>,
+    width: usize,
+    height: usize,
+) -> u32 {
     let directions: [(isize, isize); 4] = [(-1, 0), (1, 0), (0, -1), (0, 1)];
     let rays = directions
         .iter()
         .map(|(d_row, d_col)| {
             let mut hits = 0;
             let mut point = *point;
-            while let Some(char) = map.get(&point) {
-                if matches!(*char, 'F' | 'J' | '7' | 'L' | 'S') {
+            loop {
+                let char = *map.get(&point).unwrap_or(&' ');
+                if (*d_col == 0 && char == '-') || (*d_col != 0 && char == '|') {
                     hits += 1;
-                } else if (*d_col == 0 && *char == '-') || (*d_col != 0 && *char == '|') {
-                    hits += 2;
                 }
-                let new_row = (point.0 as isize + d_row);
+                let new_row = point.0 as isize + d_row;
                 let new_col = point.1 as isize + d_col;
-                if new_row < 0 || new_col < 0 {
+                if new_row < 0
+                    || new_col < 0
+                    || new_col >= width as isize
+                    || new_row >= height as isize
+                {
                     break;
                 }
                 point = (new_row as usize, new_col as usize);
             }
-            hits / 2
+            hits
         })
         .collect::<Vec<_>>();
-    if rays.iter().any(|r| *r == 0) {
-        return 0;
-    }
-    // rays.into_iter().max().unwrap()
     rays.into_iter().min().unwrap()
-    // rays.into_iter().find(|x| x % 2 == 1).unwrap_or(0)
-    // rays.into_iter().find(|x| x % 2 == 1).unwrap_or(0)
 }
