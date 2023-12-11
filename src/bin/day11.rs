@@ -1,30 +1,60 @@
-use std::collections::HashSet;
-
 use aoc2023::initialize_aoc;
 
 fn main() {
-    initialize_aoc().bench(|input| solve(input, 1), |input| solve(input, 1_000_000));
+    initialize_aoc().bench(|input| solve(input, 2), |input| solve(input, 1_000_000));
+}
+
+// For ferris elf benchmarker bot
+pub fn run(input: &str) -> i64 {
+    solve(input, 1_000_000) as i64
+    // solve(input, 2) as i64
 }
 
 fn solve(input: &str, expansion: usize) -> u64 {
     let input = input.as_bytes();
-    let galaxies = parse(&input, expansion);
-    sum_distances(&galaxies) as u64
+    let mut galaxies = parse(&input, expansion);
+    sum_distances(&mut galaxies) as u64
 }
 
-fn sum_distances(galaxies: &[(usize, usize)]) -> usize {
-    let mut sum = 0;
-    for (galaxy_index, galaxy) in galaxies.iter().enumerate() {
-        for other_galaxy in galaxies.iter().skip(galaxy_index + 1) {
-            sum += galaxy.0.abs_diff(other_galaxy.0) + galaxy.1.abs_diff(other_galaxy.1);
-        }
-    }
-    sum
+fn sum_distances(galaxies: &mut [(usize, usize)]) -> usize {
+    let num_galaxies = galaxies.len();
+    let mut previous = galaxies.last().unwrap();
+    let row_sum = previous.0
+        + galaxies
+            .iter()
+            .enumerate()
+            .rev()
+            .skip(1)
+            .map(|(index, galaxy)| {
+                let dist_to_next = previous.0 - galaxy.0;
+                // Contribution of this point to the total sum of distances
+                previous = galaxy;
+                galaxy.0 + dist_to_next * index * (num_galaxies - index - 1)
+            })
+            .sum::<usize>();
+
+    galaxies.sort_unstable_by_key(|x| x.1);
+    let mut previous = galaxies.last().unwrap();
+    let column_sum = previous.1
+        + galaxies
+            .iter()
+            .enumerate()
+            .rev()
+            .skip(1)
+            .map(|(index, galaxy)| {
+                let dist_to_next = previous.1 - galaxy.1;
+                previous = galaxy;
+                // Contribution of this point to the total sum of distances
+                galaxy.1 + dist_to_next * index * (num_galaxies - index - 1)
+            })
+            .sum::<usize>();
+
+    row_sum + column_sum
 }
 
 fn parse(input: &[u8], expansion: usize) -> Vec<(usize, usize)> {
     let mut galaxies = Vec::with_capacity(input.len() / 8);
-    let mut seen_columns = HashSet::with_capacity(input.len() / 8 / 8);
+    let mut seen_columns = std::collections::HashSet::with_capacity(input.len() / 8 / 8);
     let mut all_empty = true;
     let mut row_index = 0;
     let mut column_index = 0;
@@ -40,6 +70,7 @@ fn parse(input: &[u8], expansion: usize) -> Vec<(usize, usize)> {
             }
 
             all_empty = true;
+            max_column = max_column.max(column_index);
             column_index = 0;
             continue;
         }
@@ -49,7 +80,6 @@ fn parse(input: &[u8], expansion: usize) -> Vec<(usize, usize)> {
             all_empty = false;
         }
         column_index += 1;
-        max_column = max_column.max(column_index);
     }
 
     // Columnar expansion
