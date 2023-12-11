@@ -10,7 +10,7 @@ fn main() {
     let galaxies = parse(&input, 2);
 
     aoc.measure("P1");
-    let mut pairs = vec![];
+    let mut pairs = Vec::with_capacity(galaxies.len().pow(2));
     for (galaxy_index, galaxy) in galaxies.iter().enumerate() {
         for other_galaxy in galaxies.iter().skip(galaxy_index + 1) {
             pairs.push(manhattan_distance(galaxy, other_galaxy));
@@ -22,7 +22,7 @@ fn main() {
     let galaxies = parse(&input, 1_000_000);
 
     aoc.measure("P2");
-    let mut pairs = vec![];
+    let mut pairs = Vec::with_capacity(galaxies.len().pow(2));
     for (galaxy_index, galaxy) in galaxies.iter().enumerate() {
         for other_galaxy in galaxies.iter().skip(galaxy_index + 1) {
             pairs.push(manhattan_distance(galaxy, other_galaxy));
