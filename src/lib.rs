@@ -92,9 +92,12 @@ impl Aoc {
         let part2_calculated = part2_calc(part2_parsed.clone());
         let part2_calc_timings = bench(|| part2_calc(part2_parsed.clone()));
 
+        let part1_combined_timings = bench(|| part1_calc(part1_parse(&input)));
+        let part2_combined_timings = bench(|| part2_calc(part2_parse(&input)));
+
         tracing::info!("Part 1: {part1_calculated}, Part 2: {part2_calculated}");
-        tracing::warn!("Part 1 timings \n\nPart 1 parse\n{part1_parse_timings}\n\nPart 1 calculation\n{part1_calc_timings}\n");
-        tracing::warn!("Part 2 timings \n\nPart 2 parse\n{part2_parse_timings}\n\nPart 2 calculation\n{part2_calc_timings}\n");
+        tracing::warn!("Part 1 timings \n\nPart 1 parse\n{part1_parse_timings}\n\nPart 1 calculation\n{part1_calc_timings}\n\nPart 1 combined\n{part1_combined_timings}\n");
+        tracing::warn!("Part 2 timings \n\nPart 2 parse\n{part2_parse_timings}\n\nPart 2 calculation\n{part2_calc_timings}\n\nPart 2 combined\n{part2_combined_timings}\n");
     }
 }
 impl Drop for Aoc {
