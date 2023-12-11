@@ -63,6 +63,39 @@ impl Aoc {
         tracing::info!("Part 1: {part1_answer}, Part 2: {part2_answer}");
         tracing::warn!("Timings\n\nPart 1\n{part1_timings}\n\nPart 2\n{part2_timings}\n");
     }
+
+    pub fn bench_split<R, P1, P2, F1A, F1B, F2A, F2B>(
+        mut self,
+        part1_parse: F1A,
+        part1_calc: F1B,
+        part2_parse: F2A,
+        part2_calc: F2B,
+    ) where
+        P1: Clone,
+        P2: Clone,
+        R: std::fmt::Display,
+        F1A: Fn(&str) -> P1,
+        F1B: Fn(P1) -> R,
+        F2A: Fn(&str) -> P2,
+        F2B: Fn(P2) -> R,
+    {
+        let input = self.input();
+        self.reported_already = true;
+
+        let part1_parsed = part1_parse(&input);
+        let part1_parse_timings = bench(|| part1_parse(&input));
+        let part1_calculated = part1_calc(part1_parsed.clone());
+        let part1_calc_timings = bench(|| part1_calc(part1_parsed.clone()));
+
+        let part2_parsed = part2_parse(&input);
+        let part2_parse_timings = bench(|| part2_parse(&input));
+        let part2_calculated = part2_calc(part2_parsed.clone());
+        let part2_calc_timings = bench(|| part2_calc(part2_parsed.clone()));
+
+        tracing::info!("Part 1: {part1_calculated}, Part 2: {part2_calculated}");
+        tracing::warn!("Part 1 timings \n\nPart 1 parse\n{part1_parse_timings}\n\nPart 1 calculation\n{part1_calc_timings}\n");
+        tracing::warn!("Part 2 timings \n\nPart 2 parse\n{part2_parse_timings}\n\nPart 2 calculation\n{part2_calc_timings}\n");
+    }
 }
 impl Drop for Aoc {
     fn drop(&mut self) {
