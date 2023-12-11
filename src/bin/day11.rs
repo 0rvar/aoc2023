@@ -3,29 +3,16 @@ use std::collections::HashSet;
 use aoc2023::initialize_aoc;
 
 fn main() {
-    let mut aoc = initialize_aoc();
-    let input = aoc.input();
-    let input = input.as_bytes();
-
-    aoc.measure("Parse");
-    let galaxies = parse(&input, 2);
-
-    aoc.measure("P1");
-    let p1 = solve(&galaxies);
-
-    aoc.measure("Parse 2");
-    let galaxies = parse(&input, 1_000_000);
-
-    aoc.measure("P2");
-    let p2 = solve(&galaxies);
-
-    aoc.done();
-
-    tracing::info!("Part 1: {}", p1);
-    tracing::info!("Part 2: {}", p2);
+    initialize_aoc().bench(|input| solve(input, 1), |input| solve(input, 1_000_000));
 }
 
-fn solve(galaxies: &[(usize, usize)]) -> usize {
+fn solve(input: &str, expansion: usize) -> u64 {
+    let input = input.as_bytes();
+    let galaxies = parse(&input, expansion);
+    sum_distances(&galaxies) as u64
+}
+
+fn sum_distances(galaxies: &[(usize, usize)]) -> usize {
     let mut sum = 0;
     for (galaxy_index, galaxy) in galaxies.iter().enumerate() {
         for other_galaxy in galaxies.iter().skip(galaxy_index + 1) {
@@ -37,11 +24,13 @@ fn solve(galaxies: &[(usize, usize)]) -> usize {
 
 fn parse(input: &[u8], expansion: usize) -> Vec<(usize, usize)> {
     let mut galaxies = Vec::with_capacity(input.len() / 8);
-    let mut seen_columns = HashSet::new();
+    let mut seen_columns = HashSet::with_capacity(input.len() / 8 / 8);
     let mut all_empty = true;
     let mut row_index = 0;
     let mut column_index = 0;
     let mut max_column = 0;
+
+    // Parsing with built in row expansion
     for char in input {
         if *char == b'\n' {
             if all_empty {
@@ -63,6 +52,7 @@ fn parse(input: &[u8], expansion: usize) -> Vec<(usize, usize)> {
         max_column = max_column.max(column_index);
     }
 
+    // Columnar expansion
     let num_columns = max_column + 1;
     let mut column_offsets = vec![0; num_columns];
     for column_index in 1..num_columns {
@@ -75,5 +65,6 @@ fn parse(input: &[u8], expansion: usize) -> Vec<(usize, usize)> {
     for galaxy in &mut galaxies {
         galaxy.1 = galaxy.1 + column_offsets[galaxy.1];
     }
+
     galaxies
 }

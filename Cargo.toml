@@ -9,6 +9,7 @@ debug = true
 [dependencies]
 chumsky = "0.9.3"
 dotenv = "0.15.0"
+easybench = "1.1.1"
 humantime = "2.1.0"
 itertools = "0.12.0"
 ndarray = "0.15.6"

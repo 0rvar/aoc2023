@@ -1,5 +1,6 @@
 use std::time::Instant;
 
+use easybench::bench;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 pub struct Aoc {
@@ -45,6 +46,22 @@ impl Aoc {
         ));
         tracing::warn!("Performance counters\n\n{output}");
         self.reported_already = true;
+    }
+
+    pub fn bench<F1, F2>(mut self, part1: F1, part2: F2)
+    where
+        F1: Fn(&str) -> u64,
+        F2: Fn(&str) -> u64,
+    {
+        let input = self.input();
+        self.reported_already = true;
+        let part1_answer = part1(&input);
+        let part1_timings = bench(|| part1(&input));
+        let part2_answer = part2(&input);
+        let part2_timings = bench(|| part2(&input));
+
+        tracing::info!("Part 1: {part1_answer}, Part 2: {part2_answer}");
+        tracing::warn!("Timings\n\nPart 1\n{part1_timings}\n\nPart 2\n{part2_timings}\n");
     }
 }
 impl Drop for Aoc {
