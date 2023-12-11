@@ -30,13 +30,20 @@ impl Aoc {
         self.end_measure();
         let mut measurements = Vec::new();
         std::mem::swap(&mut self.measurements, &mut measurements);
+        let mut output = String::new();
         for (duration, label) in measurements {
-            tracing::warn!("{}: {}", label, humantime::format_duration(duration));
+            output.push_str(&format!(
+                "{}:{}{}\n",
+                label,
+                " ".repeat(15 - label.len()),
+                humantime::format_duration(duration)
+            ));
         }
-        tracing::warn!(
+        output.push_str(&format!(
             "Total elapsed: {}",
             humantime::format_duration(total_elapsed)
-        );
+        ));
+        tracing::warn!("Performance counters\n\n{output}");
         self.reported_already = true;
     }
 }
