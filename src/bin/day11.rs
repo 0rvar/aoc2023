@@ -10,30 +10,28 @@ fn main() {
     let galaxies = parse(&input, 2);
 
     aoc.measure("P1");
-    let mut pairs = Vec::with_capacity(galaxies.len().pow(2));
-    for (galaxy_index, galaxy) in galaxies.iter().enumerate() {
-        for other_galaxy in galaxies.iter().skip(galaxy_index + 1) {
-            pairs.push(manhattan_distance(galaxy, other_galaxy));
-        }
-    }
-    let p1 = pairs.iter().sum::<usize>();
+    let p1 = solve(&galaxies);
 
     aoc.measure("Parse 2");
     let galaxies = parse(&input, 1_000_000);
 
     aoc.measure("P2");
-    let mut pairs = Vec::with_capacity(galaxies.len().pow(2));
-    for (galaxy_index, galaxy) in galaxies.iter().enumerate() {
-        for other_galaxy in galaxies.iter().skip(galaxy_index + 1) {
-            pairs.push(manhattan_distance(galaxy, other_galaxy));
-        }
-    }
-    let p2 = pairs.iter().sum::<usize>();
+    let p2 = solve(&galaxies);
 
     aoc.done();
 
     tracing::info!("Part 1: {}", p1);
     tracing::info!("Part 2: {}", p2);
+}
+
+fn solve(galaxies: &[(usize, usize)]) -> usize {
+    let mut sum = 0;
+    for (galaxy_index, galaxy) in galaxies.iter().enumerate() {
+        for other_galaxy in galaxies.iter().skip(galaxy_index + 1) {
+            sum += manhattan_distance(galaxy, other_galaxy);
+        }
+    }
+    sum
 }
 
 fn parse(input: &str, expansion: usize) -> Vec<(usize, usize)> {
