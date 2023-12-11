@@ -5,6 +5,7 @@ use aoc2023::initialize_aoc;
 fn main() {
     let mut aoc = initialize_aoc();
     let input = aoc.input();
+    let input = input.as_bytes();
 
     aoc.measure("Parse");
     let galaxies = parse(&input, 2);
@@ -34,26 +35,36 @@ fn solve(galaxies: &[(usize, usize)]) -> usize {
     sum
 }
 
-fn parse(input: &str, expansion: usize) -> Vec<(usize, usize)> {
-    let mut row_index: usize = 0;
+fn parse(input: &[u8], expansion: usize) -> Vec<(usize, usize)> {
     let mut galaxies = Vec::with_capacity(input.len() / 8);
     let mut seen_columns = HashSet::new();
-    for line in input.trim().lines() {
-        let line = line.trim();
-        if line.chars().all(|c| c == '.') {
-            row_index += expansion;
-        } else {
-            for (column_index, char) in line.chars().enumerate() {
-                if char == '#' {
-                    galaxies.push((row_index, column_index));
-                    seen_columns.insert(column_index);
-                }
+    let mut all_empty = true;
+    let mut row_index = 0;
+    let mut column_index = 0;
+    let mut max_column = 0;
+    for char in input {
+        if *char == b'\n' {
+            if all_empty {
+                row_index += expansion;
+            } else {
+                row_index += 1;
             }
-            row_index += 1;
+
+            all_empty = true;
+            column_index = 0;
+            continue;
         }
+        if *char == b'#' {
+            galaxies.push((row_index, column_index));
+            seen_columns.insert(column_index);
+            all_empty = false;
+        }
+        column_index += 1;
+        max_column = max_column.max(column_index);
     }
-    let num_columns = *seen_columns.iter().max().unwrap() + 1;
-    let mut column_offsets = (0..num_columns).map(|_| 0).collect::<Vec<_>>();
+
+    let num_columns = max_column + 1;
+    let mut column_offsets = vec![0; num_columns];
     for column_index in 1..num_columns {
         if seen_columns.contains(&column_index) {
             column_offsets[column_index] = column_offsets[column_index - 1]
