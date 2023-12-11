@@ -28,7 +28,7 @@ fn solve(galaxies: &[(usize, usize)]) -> usize {
     let mut sum = 0;
     for (galaxy_index, galaxy) in galaxies.iter().enumerate() {
         for other_galaxy in galaxies.iter().skip(galaxy_index + 1) {
-            sum += manhattan_distance(galaxy, other_galaxy);
+            sum += galaxy.0.abs_diff(other_galaxy.0) + galaxy.1.abs_diff(other_galaxy.1);
         }
     }
     sum
@@ -65,25 +65,4 @@ fn parse(input: &str, expansion: usize) -> Vec<(usize, usize)> {
         galaxy.1 = galaxy.1 + column_offsets[galaxy.1];
     }
     galaxies
-}
-
-use core::ops::{Add, Sub};
-#[inline]
-fn abs_difference<T>(x: T, y: T) -> T
-where
-    T: Sub<Output = T> + Ord,
-{
-    if x < y {
-        y - x
-    } else {
-        x - y
-    }
-}
-
-#[inline]
-fn manhattan_distance<T>((x1, y1): &(T, T), (x2, y2): &(T, T)) -> T
-where
-    T: Sub<Output = T> + Add<Output = T> + Ord + Copy,
-{
-    abs_difference(*x2, *x1) + abs_difference(*y2, *y1)
 }
